@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block head %}
+<title>Many.do</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<style>
+    #preview-container {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        border: 1px solid #ccc;
+        border-radius: 50%;
+        overflow: hidden;
+        cursor: pointer; /* Add cursor pointer to indicate clickability */
+    }
+
+    #preview-container:hover .overlay {
+        background-color: rgba(0, 0, 0, 0.5); /* Darken on hover */
+    }
+
+    #preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0);
+        transition: background-color 0.3s ease;
+    }
+
+    .remove-btn {
+        position: absolute;
+        top: 20px;
+        right: 5px;
+        background-color: rgba(0, 0, 0, 0.5);
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        overflow: visible;
+    }
+</style>
+{% endblock %}
+{% block body %}
+
+<p class="logintext" align="center">Sign up</p>
+
+<div class="form-container">
+    <form method="POST" align="center" enctype="multipart/form-data">
+      <div align="center">
+        <!-- Make the preview circle clickable -->
+        <div id="preview-container">
+            <label for="fileInput">
+                <input type="file" name="file" id="fileInput" accept="image/*" style="display: none;" />
+                <img id="preview" src="/static/uploads/default.png" alt="Default Image">
+                <div class="overlay"></div> <!-- Add overlay for hover effect -->
+            </label>
+            <button class="remove-btn" id="clearBtn">X</button> <!-- Add remove button -->
+        </div>
+        <br>
+    </div>
+        <div class="input-group">
+            <input required autocomplete="off" 
+                type="text"
+                class="input"
+                id="name"
+                name="name"
+            />
+            <label for="name" class="label">Name</label>
+        </div>
+        <br>
+        <div class="input-group">
+            <input required autocomplete="off" 
+                type="email"
+                class="input"
+                id="email"
+                name="email"
+            />
+            <label class="label" for="email">Email</label>
+        </div>
+        <br>
+        <div class="input-group">
+            <input required autocomplete="off" 
+                type="password"
+                class="input"
+                id="passw"
+                name="passw"
+            />
+            <label class="label" for="passw">password</label>
+        </div>
+        <br />
+        <button type="submit" class="btn"><span>Submit</span></button>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Set default image when page loads
+        $('#preview-container').click(function () {
+            $('#fileInput').click(); // Trigger click event on file input when the preview circle is clicked
+        });
+
+        $('#fileInput').change(function () {
+            var file = $(this)[0].files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#preview').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(file);
+            } else {
+                $('#preview').attr('src', '/static/uploads/default.png');
+            }
+        });
+
+        // Clear file input and revert to default image on button click
+        $('#clearBtn').click(function () {
+            $('#fileInput').val('');
+            $('#preview').attr('src', '/static/uploads/default.png');
+        });
+    });
+</script>
+
+{% endblock %}

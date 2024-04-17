@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Many.do</title>
+{% endblock %} 
+
+{% block body %}
+<style>
+  section {
+    margin-right: 400px; /* Ensure there's space for the aside */
+  }
+  .notes-container {
+    height: 650px; /* Set a fixed height */
+    background-color: #5955557e; /* Set a different color for the container */
+    padding: 10px; /* Add padding for better visibility */
+    border-radius: 10px; /* Add rounded corners */
+    margin-left: 1%;
+    margin-right: 1%;
+    position: relative; /* Set position to relative */
+    overflow: hidden; /* Hide overflowing content */
+  }
+  .notes-list {
+    height: calc(100% - 60px); /* Set height for the list, leaving space for the textarea and button */
+    overflow-y: auto; /* Enable vertical scrollbar */
+  }
+  .list-group-item {
+    background-color: rgba(241, 241, 241, 0.555); 
+    padding: 10px; 
+    margin-bottom: 10px; /* Add space between list items */
+    border-radius: 10px; /* Add rounded corners */
+    position: relative; /* Position relative for absolute positioning of delete button */
+    height: 60px;
+    font-size: large;
+    display: flex; /* Use flexbox for centering */
+    align-items: center; /* Center vertically */
+    white-space: nowrap; /* Prevent line breaks */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Show ellipsis for overflow */
+}
+
+  .note-checkbox {
+    width: 30px; /* Set width of checkbox */
+    height: 30px; /* Set height of checkbox */
+    margin-right: 10px; /* Add some space between checkbox and text */
+    appearance: none; /* Remove default appearance */
+    -webkit-appearance: none; /* Remove default appearance for Safari */
+    -moz-appearance: none; /* Remove default appearance for Firefox */
+    border-radius: 50%; /* Make checkbox circular */
+    border: 2px solid #555; /* Add border */
+    outline: none; /* Remove outline */
+    cursor: pointer; /* Add pointer cursor */
+    position: relative; /* Position relative for pseudo-elements */
+  }
+
+  .note-checkbox:checked::before {
+    content: ''; /* Create the inner circle */
+    position: absolute; /* Position absolute */
+    top: 50%; /* Position at the center vertically */
+    left: 50%; /* Position at the center horizontally */
+    transform: translate(-50%, -50%); /* Center the inner circle */
+    width: 20px; /* Set width of inner circle */
+    height: 20px; /* Set height of inner circle */
+    background-color: #0099ff; /* Set color of inner circle */
+    border-radius: 50%; /* Make inner circle circular */
+  }
+
+  textarea {
+    width: calc(100% - 265px); /* Adjust width */
+    height: 40px; /* Adjust height */
+    /* padding: 10px; Add padding */
+    border-radius: 10px; /* Add rounded corners */
+    resize: none; /* Disable resizing */
+    margin-bottom: 10px; /* Add space between textarea and button */
+    position: absolute; /* Position the textarea */
+    bottom: 10px; /* Distance from the bottom */
+    left: 13%; /* Distance from the left */
+    font-size: large;
+  }
+  button[type="submit"] {
+    position: absolute; /* Position the button */
+    bottom: 15px; /* Distance from the bottom */
+    right: 15px; /* Distance from the right */
+    width: 80px; /* Adjust button width */
+    height: 50px; /* Adjust button height */
+    border-radius: 10px; /* Add rounded corners */
+  }
+  .list-group-item button.close {
+      width: 7%;
+      position: absolute;
+      top: 10px;
+      right: 10px; /* Align to the right */
+      z-index: 1; /* Ensure the button is above the list item content */
+      border-radius: 7px;
+      background-color: rgba(255, 0, 0, 0.423);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+  .list-group-item button.close span {
+    color: rgb(255, 255, 255);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.7px;
+  }
+  .list-group-item button.close:hover {
+    background-color: rgba(255, 0, 0, 0.614);
+  }
+
+  .completed {
+  text-decoration: line-through;
+  color: #888; /* Grayish color */
+}
+
+  .aside-container {
+      background-color: #5955557e;
+      width: 680px;
+      height: 720px;
+      border-radius: 10px;
+      float: right;
+      margin-left: 20px;
+      overflow: hidden;
+      margin-top: 1%;
+    }
+  
+    /* Style for the content inside the aside container */
+    .aside-content {
+      padding: 20px;
+    }
+
+    .duedate {
+  width: 10%;
+  height: 30px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* Optional: Style for the label */
+.duedate-label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+
+</style>
+
+  <aside>
+    <div class="aside-container">
+      <div class="aside-content">
+      </div>
+    </div>
+  </aside>
+
+
+
+  <section>
+    <h1 align="start" style="padding-left: 10px;margin-top: 1% ;color: rgb(106, 106, 106) ;">Welcome back, {{ user.name}}</h1>
+  
+    <div class="notes-container">
+      <ul class="list-group notes-list" id="notes">
+        {% set today = current_date %}
+        {% set tomorrow = tomorrow_date %}
+        {% set future_dates = dict() %}
+        {% for note in user.notes|reverse %}
+          {% if note.due_date == today %}
+            {% set due_date = note.due_date.strftime('%B %dth') %}
+          {% elif note.due_date == tomorrow %}
+            {% set due_date = note.due_date.strftime('%B %dth') %}
+          {% else %}
+            {% set due_date = note.due_date.strftime('%B %dth') %}
+          {% endif %}
+          
+          {% if due_date not in future_dates %}
+            {% set _ = future_dates.update({due_date: []}) %}
+          {% endif %}
+          
+          {% set _ = future_dates[due_date].append(note) %}
+        {% endfor %}
+        
+        {% set sorted_dates = future_dates.keys()|sort %}
+        
+        {% for due_date in sorted_dates %}
+          <li class="due-date-header">
+            {% if due_date==today.strftime('%B %dth') %}TODAY{% elif due_date==tomorrow.strftime('%B %dth') %}TOMORROW{% else %}{{ due_date }}{% endif %}
+          </li>
+          {% for task in future_dates[due_date] %}
+            <li class="list-group-item">
+              <input type="checkbox" class="note-checkbox" {% if task.completed %}checked{% endif %} onChange="toggleCompleted('{{ task.id }}', this)">
+              <p class="note-text">{{ task.data }}</p>
+              <button type="button" class="close" onClick="deleteNote('{{ task.id }}')">
+                <span aria-hidden="true" style="font-size: x-large;">&times;</span>
+              </button>
+            </li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+      <hr>
+      <form method="POST">
+        <textarea name="note" id="note" class="form-control"></textarea>
+        <input type="date" id="duedate" class="duedate" name="duedate">
+        <button type="submit" class="'btn">Add task</button>
+      </form>
+    </div>
+  </section>
+  
+  
+
+
+
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Get today's date in the format YYYY-MM-DD
+    var today = new Date().toISOString().split('T')[0];
+    // Set the default value of the date input to today
+    document.getElementById('duedate').value = today;
+});
+
+
+
+function toggleCompleted(noteId, checkbox) {
+    fetch('/toggle-completed', {
+        method: 'POST',
+        body: JSON.stringify({ noteId: noteId, completed: checkbox.checked }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Note completed status updated successfully');
+        } else {
+            console.error('Failed to update note completed status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var notes = document.querySelectorAll('.list-group-item');
+  
+      notes.forEach(function(note) {
+        var textElement = note.querySelector('.note-text');
+        var deleteButton = note.querySelector('.close');
+        var checkbox = note.querySelector('.note-checkbox');
+        var text = textElement.textContent.trim();
+        var containerWidth = note.offsetWidth;
+        var buttonWidth = deleteButton.offsetWidth;
+        var availableWidth = containerWidth - buttonWidth - 20; // Adjust for padding/margin
+  
+        // Measure text width
+        textElement.style.visibility = 'hidden';
+        var textWidth = textElement.offsetWidth;
+        textElement.style.visibility = 'visible';
+  
+        // Compare text width with available width
+        if (textWidth > availableWidth) {
+          // Truncate text and add ellipsis
+          while (textElement.offsetWidth > availableWidth) {
+            text = text.slice(0, -1);
+            textElement.textContent = text + '...';
+          }
+        }
+  
+        // Toggle delete button visibility based on checkbox state
+        function toggleDeleteButtonVisibility() {
+          if (checkbox.checked) {
+            deleteButton.style.display = 'block';
+            textElement.classList.add('completed'); // Apply completed styling
+          } else {
+            deleteButton.style.display = 'none';
+            textElement.classList.remove('completed'); // Remove completed styling
+          }
+        }
+  
+        // Check initial state of checkbox and adjust delete button visibility
+        toggleDeleteButtonVisibility();
+  
+        // Add event listener to checkbox to toggle delete button visibility
+        checkbox.addEventListener('change', toggleDeleteButtonVisibility);
+      });
+    });
+  
+    function toggleCompleted(noteId, checkbox) {
+      fetch('/toggle-completed', {
+          method: 'POST',
+          body: JSON.stringify({ noteId: noteId, completed: checkbox.checked }),
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      })
+      .then(response => {
+          if (response.ok) {
+              console.log('Note completed status updated successfully');
+          } else {
+              console.error('Failed to update note completed status');
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+    }
+  </script>
+  
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block head %}<title>Many.do</title>{% endblock %} {%
+block body %}
+
+<p class="logintext" align="center">Login</p>
+<div class="form-container">
+<form method="POST" align="center">
+  <div class="input-group">
+    
+    <input required autocomplete="off" 
+      type="email"
+      class="input"
+      id="email"
+      name="email"
+    />
+    <label class="label" for="email">Email</label>
+  </div>
+  <br>
+  <div class="input-group">
+    <input required autocomplete="off" 
+      type="password"
+      class="input"
+      id="passw"
+      name="passw"
+    />
+    <label class="label" for="passw">password</label>
+  </div>
+  <br />
+  <button type="submit" class="btn"><span>Log in</span></button>
+</form>
+</div>
+
+{% endblock %}
