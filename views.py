@@ -5,6 +5,7 @@ from app import db
 import json
 from flask import url_for,redirect
 from datetime import datetime, timedelta  # Import datetime module
+from sqlalchemy.orm import validates
 
 
 #creating blueprint named views
@@ -14,30 +15,36 @@ views = Blueprint('views', __name__)
 @views.route('/',methods=['GET','POST'])
 @login_required
 
-
 def home():
-    # if user adds note we get the note in a variable called note 
-    current_date = datetime.now().date()
+    current_date = datetime.now().date()  # Ensure current_date is a date object
     tomorrow_date = current_date + timedelta(days=1)
 
-    if request.method=='POST':
-        note= request.form.get('note')
-        due_date = request.form.get('duedate')
+    if request.method == 'POST':
+        note = request.form.get('note')
+        due_date_str = request.form.get('duedate')
 
-        #if note is empty we flash that the note is empty
-        if len(note)<1:
+        if len(note) < 1:
             pass
-
         else:
-            # if note isnt empty we create an instance of the class note where data is the note we stored in the last block and user_id is the current users id
-            new_note = Note(data=note, due_date=datetime.strptime(due_date, '%Y-%m-%d'), user_id=current_user.id)
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()  # Convert to date object
+                validate_due_date( None, due_date)
+            except ValueError as e:
+                flash(str(e), 'error')
+                return redirect(url_for('views.home'))
 
-            #we add the instance to the database and commit
+            new_note = Note(data=note, due_date=due_date, user_id=current_user.id)
             db.session.add(new_note)
             db.session.commit()
             return redirect(url_for('views.home'))
 
-    return render_template("index.html", user= current_user,current_date=current_date, tomorrow_date=tomorrow_date)
+    return render_template("index.html", user=current_user, current_date=current_date, tomorrow_date=tomorrow_date)
+
+@validates('due_date')
+def validate_due_date(key, due_date):
+    if due_date < datetime.now().date():  # Ensure datetime.now().date() is a date object
+        raise ValueError('Due date cannot be in the past.')
+    return due_date
 
 
 #we create another route which just takes the post method
