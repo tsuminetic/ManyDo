@@ -142,7 +142,7 @@
 }
 
 .todaytmr{
-  color: rgb(65, 65, 65);
+  color: rgb(248, 248, 248);
 }
 
 
@@ -158,7 +158,7 @@
 
 
   <section>
-    <h1 align="start" style="padding-left: 10px;margin-top: 1% ;color: rgb(106, 106, 106) ;">Welcome back, {{ user.name}}</h1>
+    <h1 align="start" style="padding-left: 15px;margin-top: 1% ;color: rgb(85, 85, 85) ;">Welcome back, {{ user.name}}</h1>
   
     <div class="notes-container">
       <ul class="list-group notes-list" id="notes">
@@ -189,11 +189,13 @@
             <h2 class="todaytmr">TODAY</h2>
             {% elif due_date==tomorrow.strftime('%B %dth') %}
             <h2 class="todaytmr">TOMORROW</h2>
+            {% elif due_date < today.strftime('%B %dth') %}
+            <h2 class="todaytmr">OVERDUE ({{ due_date }})</h2>
             {% else %}
             <h2 class="todaytmr">{{ due_date }}</h2>
             {% endif %}
           </li>
-          {% for task in future_dates[due_date] %}
+          {% for task in future_dates[due_date]|reverse %}
             <li class="list-group-item">
               <input type="checkbox" class="note-checkbox" {% if task.completed %}checked{% endif %} onChange="toggleCompleted('{{ task.id }}', this)">
               <p class="note-text">{{ task.data }}</p>
