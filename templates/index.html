@@ -65,7 +65,7 @@
   }
 
   textarea {
-    width: calc(100% - 265px); /* Adjust width */
+    width: calc(100% - 270px); /* Adjust width */
     height: 40px; /* Adjust height */
     /* padding: 10px; Add padding */
     border-radius: 10px; /* Add rounded corners */
@@ -141,6 +141,10 @@
   font-weight: bold;
 }
 
+.todaytmr{
+  color: rgb(65, 65, 65);
+}
+
 
 </style>
 
@@ -181,7 +185,13 @@
         
         {% for due_date in sorted_dates %}
           <li class="due-date-header">
-            {% if due_date==today.strftime('%B %dth') %}TODAY{% elif due_date==tomorrow.strftime('%B %dth') %}TOMORROW{% else %}{{ due_date }}{% endif %}
+            {% if due_date==today.strftime('%B %dth') %}
+            <h2 class="todaytmr">TODAY</h2>
+            {% elif due_date==tomorrow.strftime('%B %dth') %}
+            <h2 class="todaytmr">TOMORROW</h2>
+            {% else %}
+            <h2 class="todaytmr">{{ due_date }}</h2>
+            {% endif %}
           </li>
           {% for task in future_dates[due_date] %}
             <li class="list-group-item">
