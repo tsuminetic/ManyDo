@@ -66,7 +66,6 @@ def allowed_file(filename):
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
 
-    #if the user fills the fields and click on sign up 
     if request.method=='POST':
         email=request.form.get('email')
         name=request.form.get('name')
